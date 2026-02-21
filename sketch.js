@@ -1,84 +1,89 @@
-/*
-Week 5 — Example 4: Data-driven world with JSON + Smooth Camera
-
-Course: GBDA302 | Instructors: Dr. Karen Cochrane & David Han
-Date: Feb. 12, 2026
-
-Move: WASD/Arrows
-
-Learning goals:
-- Extend the JSON-driven world to include camera parameters
-- Implement smooth camera follow using interpolation (lerp)
-- Separate camera behavior from player/world logic
-- Tune motion and feel using external data instead of hard-coded values
-- Maintain player visibility with soft camera clamping
-- Explore how small math changes affect “game feel”
-*/
-
-const VIEW_W = 800;
-const VIEW_H = 480;
-
-let worldData;
-let level;
-let player;
-
-let camX = 0;
-let camY = 0;
-
-function preload() {
-  worldData = loadJSON("world.json"); // load JSON before setup [web:122]
-}
+let worldWidth = 4000;
+let cameraX = 0;
+let symbols = [];
+let particles = [];
 
 function setup() {
-  createCanvas(VIEW_W, VIEW_H);
-  textFont("sans-serif");
-  textSize(14);
+  createCanvas(windowWidth, windowHeight);
 
-  level = new WorldLevel(worldData);
+  // Create hidden symbols
+  for (let i = 0; i < 15; i++) {
+    symbols.push({
+      x: random(200, worldWidth - 200),
+      y: random(height * 0.3, height * 0.7),
+      size: random(10, 25),
+      discovered: false,
+    });
+  }
 
-  const start = worldData.playerStart ?? { x: 300, y: 300, speed: 3 };
-  player = new Player(start.x, start.y, start.speed);
-
-  camX = player.x - width / 2;
-  camY = player.y - height / 2;
+  // Floating particles
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x: random(worldWidth),
+      y: random(height),
+      speed: random(0.2, 0.6),
+      size: random(1, 3),
+    });
+  }
 }
 
 function draw() {
-  player.updateInput();
+  // Slow camera movement
+  cameraX += 0.3;
 
-  // Keep player inside world
-  player.x = constrain(player.x, 0, level.w);
-  player.y = constrain(player.y, 0, level.h);
-
-  // Target camera (center on player)
-  let targetX = player.x - width / 2;
-  let targetY = player.y - height / 2;
-
-  // Clamp target camera safely
-  const maxCamX = max(0, level.w - width);
-  const maxCamY = max(0, level.h - height);
-  targetX = constrain(targetX, 0, maxCamX);
-  targetY = constrain(targetY, 0, maxCamY);
-
-  // Smooth follow using the JSON knob
-  const camLerp = level.camLerp; // ← data-driven now
-  camX = lerp(camX, targetX, camLerp);
-  camY = lerp(camY, targetY, camLerp);
-
-  level.drawBackground();
+  // Clamp camera
+  cameraX = constrain(cameraX, 0, worldWidth - width);
 
   push();
-  translate(-camX, -camY);
-  level.drawWorld();
-  player.draw();
-  pop();
+  translate(-cameraX, 0);
 
-  level.drawHUD(player, camX, camY);
+  drawGradientBackground();
+  drawParticles();
+  drawSymbols();
+
+  pop();
 }
 
-function keyPressed() {
-  if (key === "r" || key === "R") {
-    const start = worldData.playerStart ?? { x: 300, y: 300, speed: 3 };
-    player = new Player(start.x, start.y, start.speed);
+function drawGradientBackground() {
+  for (let y = 0; y < height; y++) {
+    let inter = map(y, 0, height, 0, 1);
+    let c = lerpColor(color(15, 20, 40), color(60, 40, 90), inter);
+    stroke(c);
+    line(cameraX, y, cameraX + width, y);
+  }
+}
+
+function drawParticles() {
+  noStroke();
+  fill(255, 40);
+
+  for (let p of particles) {
+    ellipse(p.x, p.y, p.size);
+
+    p.y -= p.speed;
+
+    if (p.y < 0) {
+      p.y = height;
+      p.x = random(worldWidth);
+    }
+  }
+}
+
+function drawSymbols() {
+  for (let s of symbols) {
+    let distanceToCameraCenter = abs(cameraX + width / 2 - s.x);
+
+    if (distanceToCameraCenter < 100) {
+      s.discovered = true;
+    }
+
+    if (s.discovered) {
+      fill(255, 180);
+      let pulse = sin(frameCount * 0.05) * 3;
+      ellipse(s.x, s.y, s.size + pulse);
+    } else {
+      fill(255, 50);
+      ellipse(s.x, s.y, s.size);
+    }
   }
 }
