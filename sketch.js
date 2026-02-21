@@ -1,61 +1,94 @@
 let worldWidth = 4000;
+let worldHeight = 2000;
+
+let player = {
+  x: 200,
+  y: 300,
+  size: 20,
+  speed: 3,
+};
+
 let cameraX = 0;
+let cameraY = 0;
+
 let symbols = [];
 let particles = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
-  // Create hidden symbols
-  for (let i = 0; i < 15; i++) {
+  // Hidden symbols
+  for (let i = 0; i < 20; i++) {
     symbols.push({
-      x: random(200, worldWidth - 200),
-      y: random(height * 0.3, height * 0.7),
-      size: random(10, 25),
+      x: random(100, worldWidth - 100),
+      y: random(100, worldHeight - 100),
+      size: random(15, 30),
       discovered: false,
     });
   }
 
   // Floating particles
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 100; i++) {
     particles.push({
       x: random(worldWidth),
-      y: random(height),
-      speed: random(0.2, 0.6),
+      y: random(worldHeight),
+      speed: random(0.2, 0.5),
       size: random(1, 3),
     });
   }
 }
 
 function draw() {
-  // Slow camera movement
-  cameraX += 0.3;
+  background(15, 20, 40);
 
-  // Clamp camera
-  cameraX = constrain(cameraX, 0, worldWidth - width);
+  updatePlayer();
+  updateCamera();
 
   push();
-  translate(-cameraX, 0);
+  translate(-cameraX, -cameraY);
 
-  drawGradientBackground();
+  drawGradient();
   drawParticles();
   drawSymbols();
+  drawPlayer();
 
   pop();
 }
 
-function drawGradientBackground() {
-  for (let y = 0; y < height; y++) {
-    let inter = map(y, 0, height, 0, 1);
-    let c = lerpColor(color(15, 20, 40), color(60, 40, 90), inter);
+function updatePlayer() {
+  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) player.x -= player.speed;
+  if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) player.x += player.speed;
+  if (keyIsDown(UP_ARROW) || keyIsDown(87)) player.y -= player.speed;
+  if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) player.y += player.speed;
+
+  player.x = constrain(player.x, 0, worldWidth);
+  player.y = constrain(player.y, 0, worldHeight);
+}
+
+function updateCamera() {
+  let targetX = player.x - width / 2;
+  let targetY = player.y - height / 2;
+
+  // Smooth easing
+  cameraX = lerp(cameraX, targetX, 0.05);
+  cameraY = lerp(cameraY, targetY, 0.05);
+
+  cameraX = constrain(cameraX, 0, worldWidth - width);
+  cameraY = constrain(cameraY, 0, worldHeight - height);
+}
+
+function drawGradient() {
+  for (let y = 0; y < worldHeight; y += 5) {
+    let inter = map(y, 0, worldHeight, 0, 1);
+    let c = lerpColor(color(20, 25, 50), color(60, 40, 90), inter);
     stroke(c);
-    line(cameraX, y, cameraX + width, y);
+    line(0, y, worldWidth, y);
   }
 }
 
 function drawParticles() {
   noStroke();
-  fill(255, 40);
+  fill(255, 30);
 
   for (let p of particles) {
     ellipse(p.x, p.y, p.size);
@@ -63,7 +96,7 @@ function drawParticles() {
     p.y -= p.speed;
 
     if (p.y < 0) {
-      p.y = height;
+      p.y = worldHeight;
       p.x = random(worldWidth);
     }
   }
@@ -71,19 +104,24 @@ function drawParticles() {
 
 function drawSymbols() {
   for (let s of symbols) {
-    let distanceToCameraCenter = abs(cameraX + width / 2 - s.x);
+    let d = dist(player.x, player.y, s.x, s.y);
 
-    if (distanceToCameraCenter < 100) {
+    if (d < 80) {
       s.discovered = true;
     }
 
     if (s.discovered) {
-      fill(255, 180);
-      let pulse = sin(frameCount * 0.05) * 3;
+      let pulse = sin(frameCount * 0.05) * 5;
+      fill(255, 200);
       ellipse(s.x, s.y, s.size + pulse);
     } else {
-      fill(255, 50);
+      fill(255, 40);
       ellipse(s.x, s.y, s.size);
     }
   }
+}
+
+function drawPlayer() {
+  fill(255);
+  ellipse(player.x, player.y, player.size);
 }
