@@ -33,7 +33,7 @@ class WorldLevel {
       this.planets.push({
         x: random(400, this.w - 400),
         y: random(400, this.h - 400),
-        size: random(120, 260),
+        size: random(60, 120),
         color: color(random(80, 200), random(60, 150), random(150, 255)),
         hasRings: random() > 0.5,
         rotationOffset: random(1000),
