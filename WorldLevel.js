@@ -35,6 +35,8 @@ class WorldLevel {
         y: random(400, this.h - 400),
         size: random(60, 120),
         color: color(random(80, 200), random(60, 150), random(150, 255)),
+        hasRings: random() > 0.5,
+        rotationOffset: random(1000),
       });
     }
   }
@@ -57,7 +59,7 @@ class WorldLevel {
       ellipse(s.x, s.y, s.size);
     }
 
-    // 🪐 Planets
+    // 🪐 Planets (draw BEFORE hidden stars so they feel distant)
     for (const p of this.planets) {
       push();
       translate(p.x, p.y);
@@ -76,6 +78,7 @@ class WorldLevel {
       fill(0, 40);
       ellipse(sin(frameCount * 0.002 + p.rotationOffset) * 10, 0, p.size * 0.9);
 
+      // rings
       if (p.hasRings) {
         stroke(255, 120);
         noFill();
