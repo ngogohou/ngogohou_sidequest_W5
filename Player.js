@@ -2,7 +2,9 @@ class Player {
   constructor(x, y, speed) {
     this.x = x;
     this.y = y;
-    this.s = speed ?? 3;
+    this.s = speed ?? 1.8; // slower, meditative pace
+    this.vx = 0;
+    this.vy = 0;
   }
 
   updateInput() {
@@ -14,14 +16,29 @@ class Player {
       (keyIsDown(DOWN_ARROW) || keyIsDown(83)) -
       (keyIsDown(UP_ARROW) || keyIsDown(87));
 
-    const len = max(1, abs(dx) + abs(dy));
-    this.x += (dx / len) * this.s;
-    this.y += (dy / len) * this.s;
+    // gentle acceleration
+    this.vx += dx * 0.15;
+    this.vy += dy * 0.15;
+
+    // soft damping (floating in space)
+    this.vx *= 0.92;
+    this.vy *= 0.92;
+
+    this.x += this.vx;
+    this.y += this.vy;
   }
 
   draw() {
-    fill(50, 110, 255);
     noStroke();
-    rect(this.x - 12, this.y - 12, 24, 24, 5);
+
+    // soft glow
+    for (let i = 40; i > 0; i -= 8) {
+      fill(120, 180, 255, 20);
+      ellipse(this.x, this.y, i);
+    }
+
+    // core
+    fill(180, 220, 255);
+    ellipse(this.x, this.y, 14);
   }
 }
