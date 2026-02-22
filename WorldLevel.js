@@ -1,59 +1,53 @@
 class WorldLevel {
   constructor(json) {
-    this.w = json.world?.w ?? 4000;
-    this.h = json.world?.h ?? 2500;
+    this.schemaVersion = json.schemaVersion ?? 1;
 
-    this.camLerp = json.camera?.lerp ?? 0.05;
+    this.w = json.world?.w ?? 2400;
+    this.h = json.world?.h ?? 1600;
+    this.bg = json.world?.bg ?? [235, 235, 235];
+    this.gridStep = json.world?.gridStep ?? 160;
 
-    this.stars = [];
-    this.discoveredCount = 0;
+    this.obstacles = json.obstacles ?? [];
 
-    // Generate galaxy stars ONCE
-    for (let i = 0; i < 200; i++) {
-      this.stars.push({
-        x: random(this.w),
-        y: random(this.h),
-        size: random(1, 4),
-        discovered: false,
-      });
-    }
+    // NEW: camera tuning knob from JSON (data-driven)
+    this.camLerp = json.camera?.lerp ?? 0.12;
   }
 
   drawBackground() {
-    // galaxy gradient
-    for (let y = 0; y < height; y++) {
-      let inter = map(y, 0, height, 0, 1);
-      let c = lerpColor(color(10, 10, 35), color(40, 10, 70), inter);
-      stroke(c);
-      line(0, y, width, y);
-    }
+    background(220);
   }
 
-  drawWorld(player) {
+  drawWorld() {
     noStroke();
+    fill(this.bg[0], this.bg[1], this.bg[2]);
+    rect(0, 0, this.w, this.h);
 
-    for (let s of this.stars) {
-      let d = dist(player.x, player.y, s.x, s.y);
+    stroke(245);
+    for (let x = 0; x <= this.w; x += this.gridStep) line(x, 0, x, this.h);
+    for (let y = 0; y <= this.h; y += this.gridStep) line(0, y, this.w, y);
 
-      if (d < 60 && !s.discovered) {
-        s.discovered = true;
-        this.discoveredCount++;
-      }
-
-      if (s.discovered) {
-        let pulse = sin(frameCount * 0.05) * 2;
-        fill(255, 230, 150);
-        ellipse(s.x, s.y, s.size + pulse);
-      } else {
-        fill(255, 255, 255, 120);
-        ellipse(s.x, s.y, s.size);
-      }
-    }
+    noStroke();
+    fill(170, 190, 210);
+    for (const o of this.obstacles) rect(o.x, o.y, o.w, o.h, o.r ?? 0);
   }
 
   drawHUD(player, camX, camY) {
     noStroke();
-    fill(255);
-    text("Stars discovered: " + this.discoveredCount, 20, 30);
+    fill(20);
+    text("Example 4 — JSON world + smooth camera (lerp).", 12, 20);
+    text(
+      "camLerp(JSON): " +
+        this.camLerp +
+        "  Player: " +
+        (player.x | 0) +
+        "," +
+        (player.y | 0) +
+        "  Cam: " +
+        (camX | 0) +
+        "," +
+        (camY | 0),
+      12,
+      40,
+    );
   }
 }

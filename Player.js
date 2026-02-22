@@ -2,11 +2,7 @@ class Player {
   constructor(x, y, speed) {
     this.x = x;
     this.y = y;
-    this.s = speed ?? 2;
-
-    this.vx = 0;
-    this.vy = 0;
-    this.friction = 0.93;
+    this.s = speed ?? 3;
   }
 
   updateInput() {
@@ -18,24 +14,14 @@ class Player {
       (keyIsDown(DOWN_ARROW) || keyIsDown(83)) -
       (keyIsDown(UP_ARROW) || keyIsDown(87));
 
-    this.vx += dx * 0.3;
-    this.vy += dy * 0.3;
-
-    this.vx *= this.friction;
-    this.vy *= this.friction;
-
-    this.x += this.vx;
-    this.y += this.vy;
+    const len = max(1, abs(dx) + abs(dy));
+    this.x += (dx / len) * this.s;
+    this.y += (dy / len) * this.s;
   }
 
   draw() {
-    background(255, 0, 0);
-
+    fill(50, 110, 255);
     noStroke();
-    fill(180, 210, 255);
-    ellipse(this.x, this.y, 18);
-
-    fill(120, 160, 255, 40);
-    ellipse(this.x, this.y, 40);
+    rect(this.x - 12, this.y - 12, 24, 24, 5);
   }
 }
