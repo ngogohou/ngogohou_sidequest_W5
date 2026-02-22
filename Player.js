@@ -2,11 +2,11 @@ class Player {
   constructor(x, y, speed) {
     this.x = x;
     this.y = y;
-    this.s = speed ?? 2.2; // slower for meditation
+    this.s = speed ?? 2;
 
     this.vx = 0;
     this.vy = 0;
-    this.friction = 0.92; // space drag
+    this.friction = 0.93;
   }
 
   updateInput() {
@@ -18,11 +18,9 @@ class Player {
       (keyIsDown(DOWN_ARROW) || keyIsDown(83)) -
       (keyIsDown(UP_ARROW) || keyIsDown(87));
 
-    // acceleration instead of direct movement
-    this.vx += dx * 0.2;
-    this.vy += dy * 0.2;
+    this.vx += dx * 0.3;
+    this.vy += dy * 0.3;
 
-    // friction for soft glide
     this.vx *= this.friction;
     this.vy *= this.friction;
 
@@ -35,7 +33,6 @@ class Player {
     fill(180, 210, 255);
     ellipse(this.x, this.y, 18);
 
-    // subtle aura
     fill(120, 160, 255, 40);
     ellipse(this.x, this.y, 40);
   }

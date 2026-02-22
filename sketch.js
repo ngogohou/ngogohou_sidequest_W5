@@ -20,7 +20,7 @@ function draw() {
 
   push();
   translate(-camX, -camY);
-  level.drawWorld(player);
+  level.drawWorld(player); // ← IMPORTANT
   player.draw();
   pop();
 
