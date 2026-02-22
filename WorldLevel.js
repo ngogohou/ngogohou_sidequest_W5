@@ -76,6 +76,13 @@ class WorldLevel {
       fill(0, 40);
       ellipse(sin(frameCount * 0.002 + p.rotationOffset) * 10, 0, p.size * 0.9);
 
+      if (p.hasRings) {
+        stroke(255, 120);
+        noFill();
+        strokeWeight(2);
+        ellipse(0, 0, p.size * 1.6, p.size * 0.5);
+      }
+
       pop();
     }
 
